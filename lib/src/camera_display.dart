@@ -141,19 +141,20 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
                   width: double.infinity,
                   child: CameraPreview(controller),
                 ),
+                buildFlashIcons(),
+                buildPickImageContainer(whiteColor, context),
               ] else ...[
                 Align(
                   alignment: Alignment.topCenter,
                   child: Container(
                     color: whiteColor,
-                    height: 360,
+                    height: double.infinity,
                     width: double.infinity,
                     child: buildCrop(selectedImage),
                   ),
                 )
               ],
-              buildFlashIcons(),
-              buildPickImageContainer(whiteColor, context),
+
             ],
           ),
         ),
@@ -257,6 +258,8 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
           Navigator.of(context).maybePop(null);
         },
       ),
+      title: selectedImage == null ? null: const Text('Crop Image'),
+      centerTitle: true,
       actions: <Widget>[
         AnimatedSwitcher(
           duration: const Duration(seconds: 1),
@@ -267,51 +270,51 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
               icon: const Icon(Icons.arrow_forward_rounded,
                   color: Colors.blue, size: 30),
               onPressed: () async {
-                      if (videoRecordFile != null) {
-                        Uint8List byte = await videoRecordFile!.readAsBytes();
-                        SelectedByte selectedByte = SelectedByte(
-                          isThatImage: false,
-                          selectedFile: videoRecordFile!,
-                          selectedByte: byte,
-                        );
-                        SelectedImagesDetails details = SelectedImagesDetails(
-                          multiSelectionMode: false,
-                          selectedFiles: [selectedByte],
-                          aspectRatio: 1.0,
-                        );
-                        if (!mounted) return;
+                if (videoRecordFile != null) {
+                  Uint8List byte = await videoRecordFile!.readAsBytes();
+                  SelectedByte selectedByte = SelectedByte(
+                    isThatImage: false,
+                    selectedFile: videoRecordFile!,
+                    selectedByte: byte,
+                  );
+                  SelectedImagesDetails details = SelectedImagesDetails(
+                    multiSelectionMode: false,
+                    selectedFiles: [selectedByte],
+                    aspectRatio: 1.0,
+                  );
+                  if (!mounted) return;
 
-                        if (widget.callbackFunction != null) {
-                          await widget.callbackFunction!(details);
-                        } else {
-                          Navigator.of(context).maybePop(details);
-                        }
-                      } else if (selectedImage != null) {
-                        File? croppedByte = await cropImage(selectedImage);
-                        if (croppedByte != null) {
-                          Uint8List byte = await croppedByte.readAsBytes();
+                  if (widget.callbackFunction != null) {
+                    await widget.callbackFunction!(details);
+                  } else {
+                    Navigator.of(context).maybePop(details);
+                  }
+                } else if (selectedImage != null) {
+                  File? croppedByte = await cropImage(selectedImage);
+                  if (croppedByte != null) {
+                    Uint8List byte = await croppedByte.readAsBytes();
 
-                          SelectedByte selectedByte = SelectedByte(
-                            isThatImage: true,
-                            selectedFile: croppedByte,
-                            selectedByte: byte,
-                          );
+                    SelectedByte selectedByte = SelectedByte(
+                      isThatImage: true,
+                      selectedFile: croppedByte,
+                      selectedByte: byte,
+                    );
 
-                          SelectedImagesDetails details = SelectedImagesDetails(
-                            selectedFiles: [selectedByte],
-                            multiSelectionMode: false,
-                            aspectRatio: 1.0,
-                          );
-                          if (!mounted) return;
+                    SelectedImagesDetails details = SelectedImagesDetails(
+                      selectedFiles: [selectedByte],
+                      multiSelectionMode: false,
+                      aspectRatio: 1.0,
+                    );
+                    if (!mounted) return;
 
-                          if (widget.callbackFunction != null) {
-                            await widget.callbackFunction!(details);
-                          } else {
-                            Navigator.of(context).maybePop(details);
-                          }
-                        }
-                      }
-                    },
+                    if (widget.callbackFunction != null) {
+                      await widget.callbackFunction!(details);
+                    } else {
+                      Navigator.of(context).maybePop(details);
+                    }
+                  }
+                }
+              },
             ),
           ),
         ),
