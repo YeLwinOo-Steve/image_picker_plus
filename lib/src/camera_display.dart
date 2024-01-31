@@ -166,7 +166,7 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 270,
-        color: whiteColor,
+        color: Colors.transparent,
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -261,55 +261,58 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
         AnimatedSwitcher(
           duration: const Duration(seconds: 1),
           switchInCurve: Curves.easeIn,
-          child: IconButton(
-            icon: const Icon(Icons.arrow_forward_rounded,
-                color: Colors.blue, size: 30),
-            onPressed: () async {
-              if (videoRecordFile != null) {
-                Uint8List byte = await videoRecordFile!.readAsBytes();
-                SelectedByte selectedByte = SelectedByte(
-                  isThatImage: false,
-                  selectedFile: videoRecordFile!,
-                  selectedByte: byte,
-                );
-                SelectedImagesDetails details = SelectedImagesDetails(
-                  multiSelectionMode: false,
-                  selectedFiles: [selectedByte],
-                  aspectRatio: 1.0,
-                );
-                if (!mounted) return;
+          child: Visibility(
+            visible: videoRecordFile != null || selectedImage != null,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_forward_rounded,
+                  color: Colors.blue, size: 30),
+              onPressed: () async {
+                      if (videoRecordFile != null) {
+                        Uint8List byte = await videoRecordFile!.readAsBytes();
+                        SelectedByte selectedByte = SelectedByte(
+                          isThatImage: false,
+                          selectedFile: videoRecordFile!,
+                          selectedByte: byte,
+                        );
+                        SelectedImagesDetails details = SelectedImagesDetails(
+                          multiSelectionMode: false,
+                          selectedFiles: [selectedByte],
+                          aspectRatio: 1.0,
+                        );
+                        if (!mounted) return;
 
-                if (widget.callbackFunction != null) {
-                  await widget.callbackFunction!(details);
-                } else {
-                  Navigator.of(context).maybePop(details);
-                }
-              } else if (selectedImage != null) {
-                File? croppedByte = await cropImage(selectedImage);
-                if (croppedByte != null) {
-                  Uint8List byte = await croppedByte.readAsBytes();
+                        if (widget.callbackFunction != null) {
+                          await widget.callbackFunction!(details);
+                        } else {
+                          Navigator.of(context).maybePop(details);
+                        }
+                      } else if (selectedImage != null) {
+                        File? croppedByte = await cropImage(selectedImage);
+                        if (croppedByte != null) {
+                          Uint8List byte = await croppedByte.readAsBytes();
 
-                  SelectedByte selectedByte = SelectedByte(
-                    isThatImage: true,
-                    selectedFile: croppedByte,
-                    selectedByte: byte,
-                  );
+                          SelectedByte selectedByte = SelectedByte(
+                            isThatImage: true,
+                            selectedFile: croppedByte,
+                            selectedByte: byte,
+                          );
 
-                  SelectedImagesDetails details = SelectedImagesDetails(
-                    selectedFiles: [selectedByte],
-                    multiSelectionMode: false,
-                    aspectRatio: 1.0,
-                  );
-                  if (!mounted) return;
+                          SelectedImagesDetails details = SelectedImagesDetails(
+                            selectedFiles: [selectedByte],
+                            multiSelectionMode: false,
+                            aspectRatio: 1.0,
+                          );
+                          if (!mounted) return;
 
-                  if (widget.callbackFunction != null) {
-                    await widget.callbackFunction!(details);
-                  } else {
-                    Navigator.of(context).maybePop(details);
-                  }
-                }
-              }
-            },
+                          if (widget.callbackFunction != null) {
+                            await widget.callbackFunction!(details);
+                          } else {
+                            Navigator.of(context).maybePop(details);
+                          }
+                        }
+                      }
+                    },
+            ),
           ),
         ),
       ],
@@ -336,7 +339,7 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
   }
 
   GestureDetector cameraButton(BuildContext context) {
-    Color whiteColor = widget.appTheme.primaryColor;
+    Color whiteColor = Colors.white;
     return GestureDetector(
       onTap: widget.enableCamera ? onPress : null,
       onLongPress: widget.enableVideo ? onLongTap : null,
