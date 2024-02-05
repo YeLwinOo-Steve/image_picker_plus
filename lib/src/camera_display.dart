@@ -144,17 +144,13 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
                 buildFlashIcons(),
                 buildPickImageContainer(whiteColor, context),
               ] else ...[
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    color: whiteColor,
-                    height: double.infinity,
-                    width: double.infinity,
-                    child: buildCrop(selectedImage),
-                  ),
+                Container(
+                  color: whiteColor,
+                  height: double.infinity,
+                  width: double.infinity,
+                  child: Image.file(selectedImage),
                 )
               ],
-
             ],
           ),
         ),
@@ -233,22 +229,24 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
     );
   }
 
-  CustomCrop buildCrop(File selectedImage) {
-    String path = selectedImage.path;
-    bool isThatVideo = path.contains("mp4", path.length - 5);
-    return CustomCrop(
-      image: selectedImage,
-      isThatImage: !isThatVideo,
-      key: cropKey,
-      alwaysShowGrid: true,
-      paintColor: widget.appTheme.primaryColor,
-    );
-  }
+  // CustomCrop buildCrop(File selectedImage) {
+  //   String path = selectedImage.path;
+  //   bool isThatVideo = path.contains("mp4", path.length - 5);
+  //   return CustomCrop(
+  //     image: selectedImage,
+  //     isThatImage: !isThatVideo,
+  //     key: cropKey,
+  //     alwaysShowGrid: false,
+  //     paintColor: widget.appTheme.primaryColor,
+  //   );
+  // }
 
   AppBar appBar() {
     Color whiteColor = widget.appTheme.primaryColor;
     Color blackColor = widget.appTheme.focusColor;
     File? selectedImage = widget.selectedCameraImage.value;
+    double width = MediaQuery.sizeOf(context).width;
+    double height = MediaQuery.sizeOf(context).height;
     return AppBar(
       backgroundColor: whiteColor,
       elevation: 0,
@@ -258,17 +256,17 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
           Navigator.of(context).maybePop(null);
         },
       ),
-      title: selectedImage == null ? null: const Text('Crop Image'),
+      title: selectedImage == null ? null: const Text('Preview Image'),
       centerTitle: true,
       actions: <Widget>[
-        AnimatedSwitcher(
+        if(selectedImage != null ) AnimatedSwitcher(
           duration: const Duration(seconds: 1),
           switchInCurve: Curves.easeIn,
           child: Visibility(
             visible: videoRecordFile != null || selectedImage != null,
             child: IconButton(
-              icon: const Icon(Icons.arrow_forward_rounded,
-                  color: Colors.blue, size: 30),
+              icon: Icon(Icons.check,
+                  color: blackColor, size: 30),
               onPressed: () async {
                 if (videoRecordFile != null) {
                   Uint8List byte = await videoRecordFile!.readAsBytes();
@@ -290,29 +288,25 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
                     Navigator.of(context).maybePop(details);
                   }
                 } else if (selectedImage != null) {
-                  File? croppedByte = await cropImage(selectedImage);
-                  if (croppedByte != null) {
-                    Uint8List byte = await croppedByte.readAsBytes();
-
-                    SelectedByte selectedByte = SelectedByte(
+                  Uint8List imageByte = await selectedImage.readAsBytes();
+                  SelectedByte selectedByte = SelectedByte(
                       isThatImage: true,
-                      selectedFile: croppedByte,
-                      selectedByte: byte,
+                      selectedFile: selectedImage,
+                      selectedByte: imageByte,
                     );
 
                     SelectedImagesDetails details = SelectedImagesDetails(
                       selectedFiles: [selectedByte],
                       multiSelectionMode: false,
-                      aspectRatio: 1.0,
+                      aspectRatio: width / height,
                     );
                     if (!mounted) return;
-
-                    if (widget.callbackFunction != null) {
-                      await widget.callbackFunction!(details);
-                    } else {
-                      Navigator.of(context).maybePop(details);
-                    }
-                  }
+                    Navigator.of(context).maybePop(details);
+                    // if (widget.callbackFunction != null) {
+                    //   await widget.callbackFunction!(details);
+                    // } else {
+                    //   Navigator.of(context).maybePop(details);
+                    // }
                 }
               },
             ),
