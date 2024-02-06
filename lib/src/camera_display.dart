@@ -87,7 +87,7 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
       cameras = await availableCameras();
       if (!mounted) return;
       controller = CameraController(
-        cameras![0],
+        cameras![selectedCamera],
         ResolutionPreset.high,
         enableAudio: true,
       );
@@ -133,16 +133,18 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
     return Column(
       children: [
         appBar(),
-        Flexible(
+        Expanded(
           child: Stack(
             children: [
               if (selectedImage == null) ...[
                 SizedBox(
                   width: double.infinity,
+                  height: double.maxFinite,
                   child: CameraPreview(controller),
                 ),
                 buildFlashIcons(),
                 buildPickImageContainer(whiteColor, context),
+                chooseCamera(),
               ] else ...[
                 Container(
                   color: whiteColor,
@@ -202,6 +204,36 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
     );
   }
 
+  Align chooseCamera() {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 30, right: 10),
+        child: IconButton(
+          onPressed: () async {
+            setState(() {
+              int length = cameras?.length ?? 0;
+              if (selectedCamera == 0 && length >= 2) {
+                selectedCamera = 1;
+              } else if (selectedCamera == 1 && length >= 2) {
+                selectedCamera = 0;
+              }
+              if (kDebugMode) {
+                print("selected camera --------> $selectedCamera");
+              }
+            });
+            await controller.setDescription(cameras![selectedCamera]);
+          },
+          iconSize: 40,
+          icon: const Icon(
+            Icons.cameraswitch,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   Align buildFlashIcons() {
     return Align(
       alignment: Alignment.centerRight,
@@ -256,40 +288,40 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
           Navigator.of(context).maybePop(null);
         },
       ),
-      title: selectedImage == null ? null: const Text('Preview Image'),
+      title: selectedImage == null ? null : const Text('Preview Image'),
       centerTitle: true,
       actions: <Widget>[
-        if(selectedImage != null ) AnimatedSwitcher(
-          duration: const Duration(seconds: 1),
-          switchInCurve: Curves.easeIn,
-          child: Visibility(
-            visible: videoRecordFile != null || selectedImage != null,
-            child: IconButton(
-              icon: Icon(Icons.check,
-                  color: blackColor, size: 30),
-              onPressed: () async {
-                if (videoRecordFile != null) {
-                  Uint8List byte = await videoRecordFile!.readAsBytes();
-                  SelectedByte selectedByte = SelectedByte(
-                    isThatImage: false,
-                    selectedFile: videoRecordFile!,
-                    selectedByte: byte,
-                  );
-                  SelectedImagesDetails details = SelectedImagesDetails(
-                    multiSelectionMode: false,
-                    selectedFiles: [selectedByte],
-                    aspectRatio: 1.0,
-                  );
-                  if (!mounted) return;
+        if (selectedImage != null)
+          AnimatedSwitcher(
+            duration: const Duration(seconds: 1),
+            switchInCurve: Curves.easeIn,
+            child: Visibility(
+              visible: videoRecordFile != null || selectedImage != null,
+              child: IconButton(
+                icon: Icon(Icons.check, color: blackColor, size: 30),
+                onPressed: () async {
+                  if (videoRecordFile != null) {
+                    Uint8List byte = await videoRecordFile!.readAsBytes();
+                    SelectedByte selectedByte = SelectedByte(
+                      isThatImage: false,
+                      selectedFile: videoRecordFile!,
+                      selectedByte: byte,
+                    );
+                    SelectedImagesDetails details = SelectedImagesDetails(
+                      multiSelectionMode: false,
+                      selectedFiles: [selectedByte],
+                      aspectRatio: 1.0,
+                    );
+                    if (!mounted) return;
 
-                  if (widget.callbackFunction != null) {
-                    await widget.callbackFunction!(details);
-                  } else {
-                    Navigator.of(context).maybePop(details);
-                  }
-                } else if (selectedImage != null) {
-                  Uint8List imageByte = await selectedImage.readAsBytes();
-                  SelectedByte selectedByte = SelectedByte(
+                    if (widget.callbackFunction != null) {
+                      await widget.callbackFunction!(details);
+                    } else {
+                      Navigator.of(context).maybePop(details);
+                    }
+                  } else if (selectedImage != null) {
+                    Uint8List imageByte = await selectedImage.readAsBytes();
+                    SelectedByte selectedByte = SelectedByte(
                       isThatImage: true,
                       selectedFile: selectedImage,
                       selectedByte: imageByte,
@@ -307,11 +339,11 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
                     // } else {
                     //   Navigator.of(context).maybePop(details);
                     // }
-                }
-              },
+                  }
+                },
+              ),
             ),
           ),
-        ),
       ],
     );
   }
