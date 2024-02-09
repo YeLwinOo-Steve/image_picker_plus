@@ -210,7 +210,7 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
       alignment: Alignment.bottomRight,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 30, right: 10),
-        child: IconButton(
+        child: IconButton.outlined(
           onPressed: () async {
             setState(() {
               int length = cameras?.length ?? 0;
@@ -225,7 +225,7 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
             });
             await controller.setDescription(cameras![selectedCamera]);
           },
-          iconSize: 40,
+          iconSize: 30,
           icon: const Icon(
             Icons.cameraswitch,
             color: Colors.white,
