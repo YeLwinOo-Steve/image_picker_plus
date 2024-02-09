@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker_plus/src/custom_packages/crop_image/main/image_crop.dart';
 import 'package:image_picker_plus/src/entities/app_theme.dart';
 import 'package:image_picker_plus/src/custom_packages/crop_image/crop_image.dart';
@@ -387,9 +388,15 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
     try {
       if (!widget.selectedVideo) {
         final image = await controller.takePicture();
+        final bytes = await image.readAsBytes();
+
+        img.Image? originalImg = await img.decodeImageFile(image.path);
+        img.Image flippedImg = img.flipHorizontal(originalImg!);
         File selectedImage = File(image.path);
+        File flippedFile = await selectedImage
+            .writeAsBytes(img.encodeJpg(flippedImg), flush: true);
         setState(() {
-          widget.selectedCameraImage.value = selectedImage;
+          widget.selectedCameraImage.value = flippedFile;
           widget.replacingTabBar(true);
         });
       } else {
