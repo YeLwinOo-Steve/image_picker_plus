@@ -288,7 +288,7 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
           Navigator.of(context).maybePop(null);
         },
       ),
-      title: selectedImage == null ? null : const Text('Preview Image'),
+      title: selectedImage == null ? const Text('Camera') : const Text('Preview Image'),
       centerTitle: true,
       actions: <Widget>[
         if (selectedImage != null)
