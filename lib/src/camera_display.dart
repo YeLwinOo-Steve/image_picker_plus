@@ -147,11 +147,10 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
                 buildPickImageContainer(whiteColor, context),
                 chooseCamera(),
               ] else ...[
-                Container(
-                  color: whiteColor,
+                SizedBox(
                   height: double.infinity,
                   width: double.infinity,
-                  child: Image.file(selectedImage),
+                  child: Image.file(selectedImage, fit: BoxFit.cover),
                 )
               ],
             ],
