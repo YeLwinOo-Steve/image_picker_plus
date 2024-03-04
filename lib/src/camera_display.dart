@@ -390,12 +390,16 @@ class CustomCameraDisplayState extends State<CustomCameraDisplay> {
         final bytes = await image.readAsBytes();
 
         img.Image? originalImg = await img.decodeImageFile(image.path);
-        img.Image flippedImg = img.flipHorizontal(originalImg!);
         File selectedImage = File(image.path);
-        File flippedFile = await selectedImage
-            .writeAsBytes(img.encodeJpg(flippedImg), flush: true);
+        if(selectedCamera == 1){
+          img.Image flippedImg = img.flipHorizontal(originalImg!);
+          selectedImage = await selectedImage
+              .writeAsBytes(img.encodeJpg(flippedImg), flush: true);
+        }
         setState(() {
-          widget.selectedCameraImage.value = flippedFile;
+          print("camera ---------------> $selectedCamera");
+          // widget.selectedCameraImage.value = selectedCamera == 0 ? selectedImage : flippedFile;
+          widget.selectedCameraImage.value = selectedImage;
           widget.replacingTabBar(true);
         });
       } else {
